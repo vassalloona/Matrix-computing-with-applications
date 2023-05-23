@@ -1,0 +1,17 @@
+Load variables named cost, price and sales from file business.mat.
+Variable sales contains quarterly sales for two products.
+Compute:
+What is the yearly total sales for each product (in units sold)? (2x1 vector)
+If cost is the price we pay for the product and price is the price we sell the product, what is the yearly profit for each product? (2x1 vector)
+What is the total profit each quarter? (1x4 vector)
+Hint: You can do this exercise using loops, but using unitwise operations and the sum() function, you can do it much quicker.
+
+%% Solution:
+
+function [yearlySales,productProfit,quarterlyProfit] = e4p1()
+
+load('business.mat','cost','price','sales');
+yearlySales = sum(sales,2);
+profitPerUnit = price - cost;
+productProfit = profitPerUnit.*yearlySales;
+quarterlyProfit = sum(sales.*profitPerUnit);
