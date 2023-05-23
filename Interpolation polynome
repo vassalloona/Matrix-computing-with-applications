@@ -1,0 +1,31 @@
+Load the attached file "swimmer.mat", which contains lactate measurement data of a young athlete, used with permission.
+The controlled variable is swimming velocity [m/s] and the dependent variable is blood lactate concentration [mmol/l].
+Define the Vandermonde matrix X (in ascending order of the degree of terms) for an interpolation polynome and find the coefficients b (in ascending order of the degree of terms) of the interpolation polynome.
+Estimate the lactate concentration c at the given velocity v.
+
+%% Solution:
+
+function [c, X, b] = e4p2(v)
+% Load the attached file "swimmer.mat", which contains lactate measurement
+% data of a young athlete, used with permission.
+% 
+% The controlled variable is swimming velocity [m/s] and the dependent
+% variable is blood lactate concentration [mmol/l].
+%
+% Define the Vandermonde matrix X (in ascending order of the degree of
+% terms) for an interpolation polynome and find the coefficients b (in
+% ascending order of the degree of terms) of the interpolation polynome.
+%
+% Estimate the lactate concentration c at the given velocity v.
+load('swimmer.mat','lactate','velocity');
+% First find out the number of data points
+% It's four, so we can fit a third-degree interpolation polynome
+X = [velocity.^0, velocity.^1, velocity.^2, velocity.^3];
+y = lactate; % Strictly speaking not necessary, be we get the default names
+b = X\y; % Least squares fit, but with this data, unique solution exists
+c = b(1)+b(2)*v+b(3)*v.^2+b(4)*v.^3; % Function value at any given v
+% Above form for the function is vectorized - if we want just one scalar v,
+% the "dot notation" is not necessary.
+
+To call the function:
+v = 1,2;
