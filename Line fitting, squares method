@@ -1,0 +1,33 @@
+Attached file "T.mat" contains temperature data from Lappeenranta Airport.
+Fitting a linear model (straight line, 1st degree model, 1st degree polynome) to the data, interprete the coefficients.
+Is the temperature increasing? If yes, return "true" in value "trend", otherwise return "false".
+Using the fit line, what would be the "predicted" temperature on New Year's Eve (December 31st, 2022)?
+Hint: If you select your time axis as "day number of the year", what would be the "zeroth" day?
+
+%% Solution:
+
+function [newyeareve,trend] = e4p3()
+% Attached file "T.mat" contains temperature data from Lappeenranta
+% Airport.
+%
+% Fitting a linear model (straight line, 1st degree model, 1st degree
+% polynome) to the data, interprete the coefficients.
+% Is the temperature increasing? If yes, return "true" in value "trend",
+% otherwise return "false".
+% Using the fit line, what would be the "predicted" temperature on New
+% Year's Eve (2022)?
+load("T.mat","T","month","day");
+% Just check month/day or time to see that there's no missing
+% measurements... so time can be just "day of the year"
+t = (1:length(T))';
+X = [ones(size(t)), t];
+y = T;
+b = X\y;
+newyeareve=b(1); % Constant for f(t) = value at t = 0
+if(b(2)>0)
+    disp('Temperature is increasing')
+    trend = true;
+else
+    disp('Temperature is decreasing')
+    trend = false;
+end
