@@ -1,0 +1,165 @@
+"Predictions are difficult, especially if they concern the future."
+-Iiro Viinanen, Finnish Minister of Finance during the 90s recession
+While predicting the weather isn't quite as simple as we're doing now, let's try predicting the first week of February based on temperature in January.
+So, select temperature records from January as your "training" set. You will fit the model using this set.
+Using your model, extrapolate/predict temperature in February and compare them to the actual February data. This is your "test" set.
+Usually training/test division is randomized to avoid systematic error, 
+but it is an actual short-term prediction method to have a model predict the current time and use it then to predict the near future.
+Use sum of squares of error (SSE) as your error estimate. That is, compute the error for each day in February data, 
+square them (unitwise) and sum the resulting square error.
+Calculate the error only for your test set first.
+The next part can be done either "by hand" or you can automate it: Find which degree of polynome 
+(usually pretty low degree, maybe up to five?) has the least error on the test set.
+What is the degree of this model? (value bestDegree)
+Hint: If you want to automate that and have the SSEs in a vector, use
+[minimumValue,whereItIs] = min(SSE);
+What is the error (SSE) for this polynome on the training set? (SSEtrain)
+What is the error (SSE) for this polynome on the test set? (SSEtest)
+Use the (same) data from attached T.mat.
+Hint 1: You can write a Vandermonde matrix in a for loop, so you could write a subfunction to calculate the error for a model of certain degree.
+Hint 2: Alternatively check functions "polyfit" and "polyval" from Matlab Curve Fitting Toolbox.
+Hint 3: If you want to visualize the difference in error levels between training and test sets, 
+you might want to display on screen the mean square errors (MSE, SSE/n).
+
+%% Solution:
+
+function [SSEtrain, SSEtest, bestDegree] = e4p4()
+% "Ennustaminen on vaikeaa, erityisesti tulevaisuuden ennustaminen."
+% "Predictions are difficult, especially if they concern the future."
+% --Iiro Viinanen, Finnish Minister of Finance during the 90s recession
+%
+% While predicting the weather isn't quite as simple as we're doing now,
+% let's try predicting the first week of February based on temperature in
+% January.
+%
+% So, select temperature records from January as your "training" set. You
+% will fit the model using this set.
+%
+% Using your model, extrapolate/predict temperature in February and compare
+% them to the actual February data. This is your "test" set.
+%
+% Usually training/test division is randomized to avoid systematic error,
+% but it is an actual short-term prediction method to have a model predict
+% the current time and use it then to predict the near future.
+%
+% Use sum of squares of error (SSE) as your error estimate. That is,
+% compute the error for each day in February data, square them (unitwise)
+% and sum the resulting square error.
+%
+% Calculate the error only for your test set first.
+%
+% The next part can be done either "by hand" or you can automate it:
+% Find which degree of polynome (usually pretty low degree, maybe up to
+% five?) has the least error on the test set.
+%
+% What is the degree of this model? (value bestDegree)
+% Hint: If you want to automate that and have the SSEs in a vector, use
+% [minimumValue,whereItIs] = min(SSE);
+%
+% What is the error (SSE) for this polynome on the training set? (SSEtrain)
+%
+% What is the error (SSE) for this polynome on the test set? (SSEtest)
+%
+% Use the (same) data from attached T.mat.
+
+% Okay, let's load data
+load("T.mat","T","month")
+% Training set: January
+train = month==1;
+% Test set: Beginning of February
+test = month==2;
+% Time axis was linear
+t = (1:length(T))';
+% Define our training set
+trainx = t(train);
+trainy = T(train);
+% Define our test set
+testx = t(test);
+testy = t(test);
+% And some Vandermonde matrices:
+% This could be done trying by hand, maybe with polyfit/polyval, but here's
+% all the Vandermonde matrices for the different degrees:
+X1 = [ones(size(trainx)),trainx];
+X2 = [X1,trainx.^2];
+X3 = [X2,trainx.^3];
+X4 = [X3,trainx.^4];
+X5 = [X4,trainx.^5]; % The copy-paste is strong in this one
+% And the same for the test set - could also be later, of course
+Xtest1 = [ones(size(testx)),testx];
+Xtest2 = [Xtest1,testx.^2];
+Xtest3 = [Xtest2,testx.^3];
+Xtest4 = [Xtest3,testx.^4];
+Xtest5 = [Xtest4,testx.^5];
+% Compute coefficients:
+b1 = X1\trainy;
+b2 = X2\trainy;
+b3 = X3\trainy;
+b4 = X4\trainy;
+b5 = X5\trainy;
+% Let's see how good those are.
+% X and b values are of different size, otherwise could do with a loop
+% (Yes, you could do a cell array, but not looking to explain 
+maxdegree = 5;
+yhat = zeros(length(testy),maxdegree); % Initializing...
+yhat(:,1) = Xtest1*b1;
+yhat(:,2) = Xtest2*b2;
+yhat(:,3) = Xtest3*b3;
+yhat(:,4) = Xtest4*b4;
+yhat(:,5) = Xtest5*b5;
+SSE = zeros(1,maxdegree); % Initializing...
+for i = 1:maxdegree
+    SSE(i) = sum((testy-yhat(:,i)).^2);
+end
+[SSEtest,bestDegree] = min(SSE); % Okay, I need to tell how this function works
+switch(bestDegree)
+    case 1
+        SSEtrain = sum((trainy-X1*b1).^2);
+    case 2
+        SSEtrain = sum((trainy-X2*b2).^2);
+    case 3
+        SSEtrain = sum((trainy-X3*b3).^2);
+    case 4
+        SSEtrain = sum((trainy-X4*b4).^2);
+    case 5
+        SSEtrain = sum((trainy-X5*b5).^2);
+    otherwise
+        error('bestDegree out of bounds')
+end
+end
+
+function [SSEtrain, SSEtest, bestDegree] = e4p4poly() %#ok<DEFNU> 
+% Example how to do that with polyfit/polyval.
+% Btw, the %# comment after the function definition is a message to the
+% Matlab editor for "yes, I know this function is not used, no need to warn
+% me"
+% Okay, let's load data
+load("T.mat","T","month")
+% Training set: January
+train = month==1;
+% Test set: Beginning of February
+test = month==2;
+% Time axis was linear
+t = (1:length(T))';
+% Define our training set
+trainx = t(train);
+trainy = T(train);
+% Define our test set
+testx = t(test);
+testy = t(test);
+% Hey, now we can do this in a loop:
+maxdegree = 5;
+SSE = zeros(1,maxdegree);
+ntrain = length(trainx);
+ntest = length(testx);
+for i = 1:maxdegree
+    p = polyfit(trainx,trainy,i);
+    SSEtr =  sum((polyval(p,trainx)-trainy).^2);
+    SSE(i) = sum((polyval(p,testx)-testy).^2);
+    disp("Polynome degree: " + i);
+    disp("MSE (train):     " + SSEtr/ntrain);
+    disp("MSE (test):      " + SSE(i)/ntest);
+end
+[SSEtest,bestDegree] = min(SSE);
+p = polyfit(trainx,trainy,bestDegree);
+SSEtrain = sum((trainy-polyval(p,trainx)).^2);
+end
